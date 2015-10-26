@@ -581,6 +581,20 @@ def interpolateBezierCurve(P0, P1, P2, P3, t=100):
 
     return curvePoints
 
+# ----------------...Rotate points...----------------------------------------
+def rotateXY(point_to_rotate_x, point_to_rotate_y, origin_x, origin_y, angle):
+    old_angle = angleOfLine(origin_x, origin_y, point_to_rotate_x, point_to_rotate_y)
+    angle_of_point = old_angle + angle
+    distance = lineLength(point_to_rotate_x, point_to_rotate_y, origin_x, origin_y)
+    return xyFromDistanceAndAngle(origin_x, origin_y, distance, angle_of_point)
+
+def rotateP(point_to_rotate, origin, angle):
+    return rotateXY(point_to_rotate.x, point_to_rotate.y, origin.x, origin.y, angle)
+
+def pntRotateP(point_to_rotate, origin, angle):
+    (x, y) = rotateP(point_to_rotate, origin, angle)
+    return Pnt(x, y)
+    
 # ----------------...Calculate intersections...------------------------------
 
 def xyIntersectLines2(L1x1, L1y1, L1x2, L1y2, L2x1, L2y1, L2x2, L2y2):

@@ -129,25 +129,14 @@ class PatternDesign():
         length += curveLength([pt_armscye_front, control, control2, bottom_armscye])
         return length
         
-    def pntRotate(self, point_to_rotate_x, point_to_rotate_y, origin_x, origin_y, angle):
-        old_angle = angleOfLine(origin_x, origin_y, point_to_rotate_x, point_to_rotate_y)
-        angle_of_point = old_angle + angle
-        distance = lineLength(point_to_rotate_x, point_to_rotate_y, origin_x, origin_y)
-        return xyFromDistanceAndAngle(origin_x, origin_y, distance, angle_of_point)
-        
-    def pntRotateP(self, point_to_rotate, origin, angle):
-        point = pntRotateP(point_to_rotate.x, point_to_rotate.y, origin.x, origin.y, angle)
-        return Pnt(point.x, point.y)
-        
     def rotateDart(self, dart_points, points_to_rotate):
         # Determine the angle of rotation
         angle = angleOfVectorP(dart_points[0], dart_points[1], dart_points[2])
         # Rotate the dart closed
-        (dart_points[0].x, dart_points[0].y) = self.pntRotate(dart_points[0].x, dart_points[0].y, dart_points[1].x, dart_points[1].y, angle)
+        (dart_points[0].x, dart_points[0].y) = rotateP(dart_points[0], dart_points[1], angle)
         # Rotate the rest of the points
         for i in range(len(points_to_rotate)):
-            (points_to_rotate[i].x, points_to_rotate[i].y) = self.pntRotate(points_to_rotate[i].x, points_to_rotate[i].y,
-                                                                            dart_points[1].x, dart_points[1].y, angle)
+            (points_to_rotate[i].x, points_to_rotate[i].y) = rotateP(points_to_rotate[i], dart_points[1], angle)
         return 0
 
     def drawBodiceBack(self, path_svg, pts):
@@ -250,7 +239,7 @@ class PatternDesign():
         pts[25] = pPoint(pts[24].x, pts[5].y)
         pts[26] = pPoint(pts[24].x, pts[7].y)
 
-        # Attempt to rotate dart
+        # Placeholders for dart rotation
         pts[27] = pntMidPointP(pts[24], pts[25])
         pts[28] = pntMidPointP(pts[24], pts[25])
         
