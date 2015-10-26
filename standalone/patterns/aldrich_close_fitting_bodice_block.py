@@ -129,7 +129,7 @@ class PatternDesign():
         pts[2] = offsetPoint(pts[1], 0, self.cd.armscye_depth + 0.5 * CM_TO_PX)
         pts[3] = offsetPoint(pts[2], self.cd.bust_circumference / 2 + 5 * CM_TO_PX, 0)
         distance_3_4 = pts[2].y - pts[0].y
-        size = 12 + (self.cd.bust_circumference - 88 * CM_TO_PX) / 4
+        size = 12 + (self.cd.bust_circumference / CM_TO_PX - 88) / 4
         if size >= 16:
             distance_3_4 += 0.3 * CM_TO_PX * (size - 14) / 2
         if size > 20:
@@ -142,6 +142,7 @@ class PatternDesign():
         pts[9] = offsetPoint(pts[0], self.cd.neck_circumference / 5 - 0.2 * CM_TO_PX, 0)
         pts[10] = offsetPoint(pts[1], 0, self.cd.armscye_depth / 5 - 0.7 * CM_TO_PX)
         pts[11] = pntIntersectLineCircleP(pts[9], self.cd.shoulder + 1 * CM_TO_PX, pts[10], pPoint(pts[4].x, pts[10].y)).p1
+        
         pts[12] = pntMidPointP(pts[9], pts[11])
         pts[13] = offsetPoint(pts[12], -1 * CM_TO_PX, 5 * CM_TO_PX)
         # Step 13: Make sure darts are same length

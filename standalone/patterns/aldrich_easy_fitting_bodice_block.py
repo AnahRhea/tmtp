@@ -129,7 +129,7 @@ class PatternDesign():
         pts[2] = offsetPoint(pts[1], 0, self.cd.armscye_depth + 2.5 * CM_TO_PX)
         pts[3] = offsetPoint(pts[2], self.cd.bust_circumference / 2 + 7 * CM_TO_PX, 0)
         distance_3_4 = pts[2].y - pts[0].y
-        size = 12 + (self.cd.bust_circumference - 88 * CM_TO_PX) / 4
+        size = 12 + (self.cd.bust_circumference / CM_TO_PX - 88) / 4
         if size >= 16:
             distance_3_4 += 0.3 * CM_TO_PX * (size - 14) / 2
         if size > 20:
@@ -233,12 +233,12 @@ class PatternDesign():
         self.functional_ease = 4 * IN_TO_PX
         self.front_neck_drop = 3.5 * IN_TO_PX
         
-        self.cfg['paper_width']  = ( self.cd.hip_circumference + 5 * IN_TO_PX)
         self.cfg['border']       = ( 5*CM_TO_PT )        # document borders
 
         self.length = 26 * IN_TO_PX
         self.seam_allowance = 0.5 * IN_TO_PX
         self.hem_allowance = 1 * IN_TO_PX
+        
         border = self.cfg['border']
 
         # create the document info and fill it in
@@ -250,6 +250,9 @@ class PatternDesign():
                     }
         self.cfg['metainfo'] = metainfo
 
+        # self.cfg['scale'] = 1 / 5.0
+        self.cfg['paper_width']  = 7.5 * IN_TO_PX
+        
         # attributes for the entire svg document
         docattrs = {'currentScale' : "0.05 : 1",
                     'fitBoxtoViewport' : "True",

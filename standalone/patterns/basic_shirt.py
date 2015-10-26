@@ -23,17 +23,6 @@
 # This pattern is based on the basic shirt from "Design-It-Yourself
 # Clothes: Pattern Making Simplified" (Cal Patch). It was adapted by Sacha Chua.
 #
-# Required measurements:
-# bust_circumference
-# waist_circumference
-# front_shoulder_height
-# hip_circumference
-# front_shoulder_width
-# neck_width
-# overarm_length
-# arm_circumference
-# wrist_circumference
-#
 # Other settings:
 # functional_ease
 # length
@@ -108,8 +97,8 @@ class PatternDesign():
         lineP(path_svg, waist_pt)
 
         # Plot the bust line
-        armscye_pt = offsetPoint(shoulder_pt, 0, self.cd.armscye_height)
-        bust_pt = offsetPoint(placket_pt, self.quarter_bust, self.cd.armscye_height)
+        armscye_pt = offsetPoint(shoulder_pt, 0, self.cd.armscye_depth)
+        bust_pt = offsetPoint(placket_pt, self.quarter_bust, self.cd.armscye_depth)
         moveP(path_svg, shoulder_pt)
         armscye_top_pt = offsetPoint(shoulder_pt, 0, 2 * IN_TO_PX)
         armscye_bottom_pt = offsetPoint(bust_pt, -0.5 * IN_TO_PX, 0)
@@ -125,9 +114,9 @@ class PatternDesign():
 
         moveP(path_svg, armscye_pt)
         lineP(path_svg, armscye_bottom_pt)
-        moveP(path_svg, offsetPoint(placket_pt, 0, self.cd.armscye_height))
+        moveP(path_svg, offsetPoint(placket_pt, 0, self.cd.armscye_depth))
         rPoint(part, 'Armscye bottom', armscye_bottom_pt.x, armscye_bottom_pt.y)
-        moveP(path_svg, offsetPoint(placket_pt, 0, self.cd.armscye_height))
+        moveP(path_svg, offsetPoint(placket_pt, 0, self.cd.armscye_depth))
         lineP(path_svg, bust_pt)
         
         # Plot the neck points
@@ -145,7 +134,7 @@ class PatternDesign():
         
         # Plot the neckline
         new_neck_pt = pntOffLineP(high_neck_pt, shoulder_pt, 0.5 * IN_TO_PX)
-        rPoint(part, 'Neck', new_neck_pt.x, new_neck_pt.y)
+        rPointP(part, 'Neck', new_neck_pt)
         # TODO: Un-fudge these numbers
         moveP(path_svg, high_neck_pt)
         lineP(path_svg, new_neck_pt)
@@ -198,8 +187,8 @@ class PatternDesign():
         lineP(path_svg, waist_pt)
 
         # Plot the bust line
-        armscye_pt = offsetPoint(shoulder_pt, 0, self.cd.armscye_height)
-        bust_pt = offsetPoint(placket_pt, self.quarter_bust, self.cd.armscye_height)
+        armscye_pt = offsetPoint(shoulder_pt, 0, self.cd.armscye_depth)
+        bust_pt = offsetPoint(placket_pt, self.quarter_bust, self.cd.armscye_depth)
         armscye_top_pt = offsetPoint(shoulder_pt, 0, 2 * IN_TO_PX)
         armscye_bottom_pt = offsetPoint(bust_pt, -0.5 * IN_TO_PX, 0)
 
@@ -214,9 +203,9 @@ class PatternDesign():
         
         lineP(path_svg, armscye_pt)
         rPoint(part, 'Armscye top back', shoulder_pt.x, shoulder_pt.y + 2 * IN_TO_PX)
-        moveP(path_svg, offsetPoint(placket_pt, 0, self.cd.armscye_height))
+        moveP(path_svg, offsetPoint(placket_pt, 0, self.cd.armscye_depth))
         rPoint(part, 'Armscye bottom back', bust_pt.x - 0.5 * IN_TO_PX, bust_pt.y)
-        moveP(path_svg, offsetPoint(placket_pt, 0, self.cd.armscye_height))
+        moveP(path_svg, offsetPoint(placket_pt, 0, self.cd.armscye_depth))
         lineP(path_svg, bust_pt)
         
         # Plot the neck points
@@ -268,7 +257,7 @@ class PatternDesign():
         return part
 
     def draftSleeveCap(self, base_pt, wrist_pt, bicep_offset):
-        cap_height = self.cd.armscye_height * 0.67
+        cap_height = self.cd.armscye_depth * 0.67
         cap_pt = offsetPoint(base_pt, self.half_bicep, cap_height + bicep_offset)
         extended_underarm_pt = pntOffLineP(cap_pt, wrist_pt, 0.5 * IN_TO_PX)
         control1 = offsetPoint(extended_underarm_pt, -2 * IN_TO_PX, 0)
@@ -284,7 +273,7 @@ class PatternDesign():
         part.add(Path('pattern', 'sleeve path', 'Path for sleeve', path_svg, 'seamline_style'))
         moveP(path_svg, base_pt)
         wrist_pt = offsetPoint(base_pt, self.half_wrist + 0.5 *
-                              IN_TO_PX, self.cd.overarm_length - 1 * IN_TO_PX)
+                              IN_TO_PX, self.cd.sleeve_length - 1 * IN_TO_PX)
         lineP(path_svg, pPoint(base_pt.x, wrist_pt.y))
         armscye_length = (self.front_armscye_length + self.back_armscye_length) / 2
         print "Current armscye length: ", armscye_length * 2
@@ -390,6 +379,7 @@ class PatternDesign():
         self.length = 26 * IN_TO_PX
         self.seam_allowance = 0.5 * IN_TO_PX
         self.hem_allowance = 1 * IN_TO_PX
+
         border = self.cfg['border']
 
         # create the document info and fill it in
