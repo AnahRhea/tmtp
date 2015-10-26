@@ -196,11 +196,15 @@ class Document(pBase):
         xlo, ylo, xhi, yhi = self.boundingBox()
         xtrans = (-1.0 * xlo) + self.cfg['border']
         ytrans = (-1.0 * ylo) + self.cfg['border']
-        fixuptransform = ('translate(%f,%f)' % (xtrans, ytrans))
+        if 'scale' in self.cfg:
+            scale = self.cfg['scale']
+        else:
+            scale = 1.0
+        fixuptransform = ('translate(%f,%f)scale(%f,%f)' % (xtrans, ytrans, scale, scale))
 
         # -spc- TODO This is clearly wrong - it sizes the document to the pattern and ignores paper size
-        xsize = (xhi - xlo) + (2.0 * self.cfg['border'])
-        ysize = (yhi - ylo) + (2.0 * self.cfg['border'])
+        xsize = (xhi - xlo) * scale + (2.0 * self.cfg['border'])
+        ysize = (yhi - ylo) * scale + (2.0 * self.cfg['border'])
         sz.set_height(ysize)
         sz.set_width(xsize)
         print 'document height = ', ysize
