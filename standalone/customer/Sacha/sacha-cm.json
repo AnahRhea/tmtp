@@ -1,0 +1,147 @@
+{
+  "customername": {
+    "value":"Sacha",
+    "type":"string",
+    "gui_text":"Client Name"
+  },
+  "measureunit": {
+    "value":"cm",
+    "type":"string",
+    "gui_text":"Units of measurement (in or cm)"
+  },
+  "bust_circumference": {
+    "value":"93",
+    "type":"float",
+    "gui_text":"Bust Circumference"
+  },
+  "waist_circumference": {
+    "value":"86",
+    "type":"float",
+    "gui_text":"Waist Circumference"
+  },
+  "hip_circumference": {
+    "value":"101",
+    "type":"float",
+    "gui_text":"Hip Circumference"
+  },
+  "back_width": {
+    "value":"39",
+    "type":"float",
+    "gui_text":"Back width"
+  },
+  "chest": {
+    "value":"43",
+    "type":"float",
+    "gui_text":"Chest"
+  },
+  "shoulder": {
+    "value":"15",
+    "type":"float",
+    "gui_text":"Shoulder Seam Length - from Neck side to Shoulder tip"
+  },
+  "neck_circumference": {
+    "value":"35",
+    "type":"float",
+    "gui_text":"Neck Circumference"
+  },
+  "dart": {
+    "value":"7.6",
+    "type":"float",
+    "gui_text":"Dart amount to remove"
+  },
+  "arm_circumference": {
+    "value":"31",
+    "type":"float",
+    "gui_text":"Arm circumference around bicep"
+  },
+  "wrist_circumference": {
+    "value":"16.5",
+    "type":"float",
+    "gui_text":"Wrist Circumference"
+  },
+  "ankle_circumference": {
+    "value":"25",
+    "type":"float",
+    "gui_text":"Ankle circumference at widest point"
+  },
+  "high_ankle_circumference": {
+    "value": "24",
+    "type":"float",
+    "gui_text":"Ankle circumference"
+  },
+  "nape_to_waist": {
+    "value": "41.5",
+    "type": "float",
+    "gui_text": "Nape to waist at back"
+  },
+  "front_shoulder_height": {
+    "value":"42",
+    "type":"float",
+    "gui_text":"Front Shoulder Height - from Neck side to Waistline over bust"
+  },   
+  "armscye_depth": {
+    "value":"23",
+    "type":"float",
+    "gui_text":"Armsye Height / Depth"
+  },
+  "waist_to_knee": {
+    "value":"56",
+    "type":"float",
+    "gui_text":"Waist to knee"
+  },
+  "waist_to_hip": {
+    "value":"21",
+    "type":"float",
+    "gui_text":"Waist to hip"
+  },
+  "outseam": {
+    "value":"97",
+    "type":"float",
+    "gui_text":"Outside Leg length--> Waist to Floor"
+  },
+  "back_rise": {
+    "value":"35.5",
+    "type":"float",
+    "gui_text":"Rise"
+  },
+  "sleeve_length": {
+    "value":"57",
+    "type":"float",
+    "gui_text":"Overarm length / sleeve length"
+  },
+  "sleeve_length_jersey": {
+    "value":"52",
+    "type":"float",
+    "gui_text":"Overarm length / sleeve length in jersey"
+  },
+  "cuff_size_shirts": {
+    "value":"21.5",
+    "type":"float",
+    "gui_text":"Cuff size for shirts"
+  },
+  "cuff_size_two_piece_sleeve": {
+    "value":"14",
+    "type":"float",
+    "gui_text":"Cuff size for two-piece sleeves"
+  },
+  "trouser_bottom_width": {
+    "value":"31",
+    "type":"float",
+    "gui_text":"Trouser bottom width"
+  },
+  "jeans_bottom_width": {
+    "value":"31",
+    "type":"float",
+    "gui_text":"Jeans bottom width"
+  },
+  "front_shoulder_width": {
+    "value":"46.5",
+    "type":"float",
+    "gui_text":"Front shoulder width"
+  },
+  "neck_width": {
+    "value":"17",
+    "type":"float",
+    "gui_text":"Neck width"
+  }
+}
