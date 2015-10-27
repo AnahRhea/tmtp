@@ -1,0 +1,229 @@
+#!/usr/bin/env python
+#
+# This file is part of the tmtp (Tau Meta Tau Physica) project.
+# For more information, see http://www.sew-brilliant.org/
+#
+# Copyright (C) 2010, 2011, 2012 Susan Spencer and Steve Conklin
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version. Attribution must be given in 
+# all derived works.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# This is a standalone pattern generator which is part of the tmtp
+# project. It encapsulates the framework needed to generate an svg
+# output file containing a sewing pattern from information provided
+# in a separate design file. Client data (measurements) and graphics
+# styles are contained in configuration files and referenced on the
+# command line.
+#
+# Contributed by Sacha Chua
+#
+# You can convert the resulting SVGs to PNGs for easier printing
+# by using Inkscape with a command like this:
+#
+# inkscape -z -d 300 -e pattern-01.png pattern-01.svg
+
+# for the framework
+from sys             import argv
+from getopt          import getopt, GetoptError
+
+# for the pattern generation
+from tmtpl.utils     import stdo
+from tmtpl.std_app   import StdApp
+from tmtpl.markers   import markers
+
+from tmtpl.constants import *
+from tmtpl.pattern   import *
+
+from pysvg.filter import *
+from pysvg.gradient import *
+from pysvg.linking import *
+from pysvg.script import *
+from pysvg.shape import *
+from pysvg.structure import *
+from pysvg.style import *
+from pysvg.text import *
+from pysvg.builders import *
+from pysvg.parser import *
+
+# Needed in order to import the design
+from os import path
+import imp
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+# Do all the command line processing.
+#
+class Cmdline:
+    # __init__
+    #
+    def __init__(self):
+        self.cfg = {}
+
+    # error
+    #
+    def error(self, e, defaults):
+        if e != '': print e
+        self.usage(defaults)
+
+    # usage
+    #
+    # Prints out the help text which explains the command line options.
+    #
+    def usage(self, defaults):
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s <inputfile> <outputprefix> \n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help             Prints this text.                                                 \n")
+        stdo("                                                                                             \n")
+        stdo("        --height=<height>  Sets height (ex: 7.5in)                                           \n")
+        stdo("                                                                                             \n")
+        stdo("        --width=<width>    Sets width (ex: 10in).                                            \n")
+        stdo("                                                                                             \n")
+        stdo("    Creates files named <outputprefix>-<number>.svg. Input SVG height and width should       \n")
+        stdo("    include the entire pattern.                                                              \n")
+        stdo("                                                                                             \n")
+        stdo("    Ex: %s --height 7.5in --width 10in input.svg out                                         \n" % self.cfg['app_name'])
+
+    # process
+    #
+    # As you can probably tell from the name, this method is responsible
+    # for calling the getopt function to process the command line. All
+    # parameters are processed into class variables for use by other
+    # methods.
+    #
+    def process(self, argv, defaults):
+        self.cfg['app_name'] = argv[0]
+        result = True
+        try:
+            optsShort = ''
+            optsLong  = ['help', 'height=', 'width=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+            if len(args) != 2:
+                raise CmdlineError('You must supply an input file name and an output file prefix\n\n')
+            else:
+                self.cfg['infile'] = args[0]
+                self.cfg['outprefix'] = args[1]
+                
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+                elif opt == '--height':
+                    self.cfg['height'] = val
+                elif opt == '--width':
+                    self.cfg['width'] = val
+                    
+        except GetoptError, error:
+            print(error, defaults)
+            raise CmdlineError('')
+
+        return self.cfg
+
+    # verify_options
+    #
+    def verify_options(self, cfg):
+        # can add code here as needed
+        return
+
+
+class Splitter:
+    # __init__
+    #
+    def __init__(self):
+        self.defaults = {}
+        self.cfg = {}
+
+    def convertMeasurement(self, val):
+        m = re.match('([0-9.]+)(in|cm)', val)
+        if m is None:
+            return float(val)
+        elif m.group(2) == 'in':
+            return float(m.group(1)) * IN_TO_PX
+        elif m.group(2) == 'cm':
+            return float(m.group(1)) * CM_TO_PX
+
+    # main
+    #
+    def main(self):
+        cmdline = Cmdline()
+        try:
+            self.cfg = cmdline.process(argv, [])
+        # Handle the user presses <ctrl-C>.
+        except KeyboardInterrupt:
+            pass
+        # Handle command line errors.
+        except CmdlineError as e:
+            cmdline.error(e.msg, self.defaults)
+            return
+
+        # Parse the SVG
+        svg = parse(self.cfg['infile'])
+        new_width = 8 * IN_TO_PX
+        new_height = 10.5 * IN_TO_PX    
+        if 'height' in self.cfg:
+            new_height = self.convertMeasurement(self.cfg['height'])
+        if 'width' in self.cfg:
+            new_width = self.convertMeasurement(self.cfg['width'])
+        old_width = self.convertMeasurement(svg.get_width())
+        old_height = self.convertMeasurement(svg.get_height())
+            
+            
+        rows = int(math.ceil(old_width / new_width))
+        cols = int(math.ceil(old_height / new_height))
+        print "Rows: %d Cols: %d" % (rows, cols)
+        label_margin = 25
+        svg.set_width(new_width)
+        svg.set_height(new_height + label_margin)
+        print svg.get_transform()
+        page = 1
+        #svg.set_width(new_width)
+        #svg.set_height(new_height)
+        cut_rect = rect(0, 0, new_width, new_height, 0, 0)
+        cut_rect.set_stroke('red')
+        cut_rect.set_fill('none')
+        blank_rect = rect(0, 0, new_width, label_margin, 0, 0)
+        blank_rect.set_stroke('none')
+        blank_rect.set_fill('white')
+        svg.addElement(cut_rect)
+        svg.addElement(blank_rect)
+        for r in range(rows):
+            for c in range(cols):
+                svg.setAttribute('viewBox', '%f %f %f %f' % (r * new_width, c * new_height - label_margin, new_width, new_height + label_margin))
+                svg.set_transform('translate(%f %f)' % (r * new_width, c * new_height))
+                cut_rect.set_transform('translate(%f %f)' % (r * new_width, c * new_height))
+                blank_rect.set_transform('translate(%f %f)' % (r * new_width, c * new_height - label_margin))
+                
+                page_label = text('Page %d' % page, r * new_width, c * new_height - 4, 0)
+                svg.addElement(page_label)
+
+                svg.save("%s-%02d.svg" % (self.cfg['outprefix'], page))
+                page = page + 1
+        return
+
+
+if __name__ == '__main__':
+    app = Splitter()
+    
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+
