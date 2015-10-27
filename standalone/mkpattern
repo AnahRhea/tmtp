@@ -186,24 +186,23 @@ class Cmdline:
                 elif opt in ('-m', '--measurement'):
                     # ex: length=5in
                     # ex: width=0.25cm
-                    m = re.search('([^=]+)=([0-9\.]+)(inch|cm|CM|in|foot|m|ft|IN"|\')', val)
+                    m = re.search('([^=]+)=([0-9\.]+)(inch|cm|CM|in|foot|m|ft|IN"|\')?', val)
                     name = m.group(1)
                     value = float(m.group(2))
                     unit = m.group(3)
                     calc_val = None
                     if unit in ('cm', 'CM'):
                         calc_val = value * CM_TO_PX
-                    if unit in ('m', 'M'):
+                    elif unit in ('m', 'M'):
                         calc_val = value * 100 * CM_TO_PX
                     elif unit in ('in', 'IN', 'inch', '"'):
                         calc_val = value * IN_TO_PX
                     elif unit in ('ft', 'foot', '\''):
                         calc_val = value * 12 * IN_TO_PX
-                    if calc_val is None:
-                        raise CmdlineError('Unknown unit (should be in, cm, or ft): ' + unit)
                     else:
-                        # TODO: Inherit the type if specified, and don't limit it to just floats
-                        self.cfg['measurements'][name] = {'value': str(calc_val), 'type': 'float'}
+                        calc_val = value
+                    # TODO: Inherit the type if specified, and don't limit it to just floats
+                    self.cfg['measurements'][name] = {'value': str(calc_val), 'type': 'float'}
                     
         except GetoptError, error:
             print(error, defaults)

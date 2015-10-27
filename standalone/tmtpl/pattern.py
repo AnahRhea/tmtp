@@ -129,6 +129,12 @@ def quadraticCurveP(pathSVG, control1, point, transform=''):
     """
     return cubicCurveP(pathSVG, control1, control1, point, transform)
 
+def arcP(pathSVG, rx, ry, point, x_axis_rotation=0, large_arc_flag=0, sweep_flag=1, relative=False):
+    """
+    Accepts pathSVG, rx, ry, point, and optional x_axis_rotation, large_arc_flag, sweep_flag, relative. Calls appendArcToPath.
+    """
+    return pathSVG.appendArcToPath(rx, ry, point.x, point.y, x_axis_rotation, large_arc_flag, sweep_flag, relative)
+
 # ----------------...Create Paths..------------------------------
 
 def gridPath(name, label, pathSVG, transform = ''):
@@ -1004,6 +1010,96 @@ def transformPoint(x, y, transform=''):
 
 # ----------------...Calculate bounding box..------------------------------
 
+def boundingBoxForArc(x1, y1, rx, ry, phi, largeArc, sweep, x2, y2):
+    # From http://fridrich.blogspot.ca/2011/06/bounding-box-of-svg-elliptical-arc.html
+    x1prime = math.cos(phi) * (x1 - x2) / 2 + math.sin(phi) * (y1 - y2) / 2
+    y1prime = -math.sin(phi) * (x1 - x2) / 2 + math.cos(phi) * (y1 - y2) / 2
+    radicant = (rx * rx * ry * ry - rx * rx * y1prime * y1prime - ry * ry * x1prime * x1prime)
+    radicant = radicant / (rx * rx * y1prime * y1prime + ry * ry * x1prime * x1prime)
+    cxprime = 0
+    cyprime = 0
+    if radicant < 0:
+        ratio = rx / ry
+        radicant = y1prime * y1prime + x1prime * x1prime / (ratio * ratio)
+        if radicant < 0:
+            xmin = min([x1, x2])
+            xmax = max([x1, x2])
+            ymin = min([y1, y2])
+            ymax = max([y1, y2])
+            return (xmin, ymin, xmax, ymax)
+        ry = math.sqrt(radicant)
+        rx = ratio * ry
+    else:
+        if largeArc == sweep:
+            factor = - math.sqrt(radicant)
+        else:
+            factor = math.sqrt(radicant)
+        cxprime = factor * rx * y1prime / ry
+        cyprime = -factor * ry * x1prime / rx
+    cx = cxprime * cos(phi) - cyprime * sin(phi) + (x1 + x2) / 2
+    cy = cxprime * sin(phi) + cyprime * cos(phi) + (y1 + y2) / 2
+    epsilon = 0.0001
+    if (abs(phi) < epsilon or abs(phi - math.pi) < epsilon):
+        xmin = cx - rx
+        txmin = angleOfLine(0, 0, -rx, 0)
+        xmax = cx + rx
+        txmax = angleOfLine(0, 0, rx, 0)
+        ymin = cy - ry
+        tymin = angleOfLine(0, 0, 0, -ry)
+        ymax = cy + ry
+        tymax = angleOfLine(0, 0, 0, ry)
+    elif (abs(phi - math.pi / 2) < epsilon or abs(phi - 3 * math.pi / 2) < epsilon):
+        xmin = cx - ry
+        txmin = angleOfLine(0, 0, -ry, 0)
+        xmax = cx + ry
+        txmax = angleOfLine(0, 0, ry, 0)
+        ymin = cy - rx
+        tymin = angleOfLine(0, 0, 0, -rx)
+        ymax = cy + rx
+        tymax = angleOfLine(0, 0, 0, rx)
+    else:
+        txmin = -math.atan(ry * math.tan(phi) / rx)
+        txmax = math.pi - math.atan(ry * math.tan(phi) / rx)
+        xmin = cx + rx * math.cos(txmin) * math.cos(phi) - ry * math.sin(txmin) * math.sin(phi)
+        xmax = cx + rx * math.cos(txmax) * math.cos(phi) - ry * math.sin(txmax) * math.sin(phi)
+        if xmin > xmax:
+            xmin, xmax = xmax, xmin
+            txmin, txmax = txmax, txmin
+        tmpY = cy + rx * math.cos(txmin) * math.sin(phi) + ry * math.sin(txmin) * math.cos(phi)
+        txmin = angleOfLine(0, 0, xmin - cx, tmpY - cy)
+        tmpY = cy + rx * math.cos(txmax) * math.sin(phi) + ry * math.sin(txmax) * math.cos(phi)
+        txmax = angleOfLine(0, 0, xmax - cx, tmpY - cy)
+        tymin = math.atan(ry / (math.tan(phi) * rx))
+        tymax = math.atan(ry / (math.tan(phi))) + math.pi
+        ymin = cy + rx * math.cos(tymin) * math.sin(phi) + ry * math.sin(tymin) * math.cos(phi)
+        ymax = cy + rx * math.cos(tymax) * math.sin(phi) + ry * math.sin(tymax) * math.cos(phi)
+        if ymin > ymax:
+            ymin, ymax = ymax, ymin
+            tymin, tymax = tymax, tymin
+        tmpX = cx + rx * math.cos(tymin) * math.cos(phi) - ry * math.sin(tymin) * math.sin(phi)
+        tymin = angleOfLine(0, 0, tmpX - cx, ymin - cy)
+        tmpX = cx + rx * math.cos(tymax) * math.cos(phi) - ry * math.sin(tymax) * math.sin(phi)
+        tymax = angleOfLine(0, 0, tmpX - cx, ymax - cy)
+    angle1 = angleOfLine(0, 0, x1 - cx, y1 - cy)
+    angle2 = angleOfLine(0, 0, x2 - cx, y2 - cy)
+    if sweep == 0:
+        angle1, angle2 = angle2, angle1
+    otherArc = False
+    if angle1 > angle2:
+        angle1, angle2 = angle2, angle1
+        otherArc = True
+    if (not(otherArc) and ((angle1 > txmin) or (angle2 < txmin))) or (otherArc and not ((angle1 > txmin) or (angle2 < txmin))):
+        xmin = min(x1, x2)
+    if (not(otherArc) and (angle1 > txmax or angle2 < txmax)) or (otherArc and not (angle1 > txmax or angle2 < txmax)):
+        xmax = max(x1, x2)
+    if (not(otherArc) and (angle1 > tymin or angle2 < tymin)) or (otherArc and not (angle1 > tymin or angle2 < tymin)):
+        ymin = min(y1, y2)
+    if (not(otherArc) and (angle1 > tymax or angle2 < tymax)) or (otherArc and not (angle1 > tymax or angle2 < tymax)):
+        ymax = max(y1, y2)
+    return (xmin, ymin, xmax, ymax)
+    
+            
+        
 def boundingBox(path):
     xlist = []
     ylist = []
@@ -1100,9 +1196,27 @@ def boundingBox(path):
                 xlist.append(currentx)
                 ylist.append(currenty)
             elif cmd == 'A':
-                # TODO implement arcs - punt for now
+                # TODO implement arcs properly
                 # See http://www.w3.org/TR/SVG/paths.html#PathElement
-                raise ValueError('Arc commands in a path are not currently handled')
+                rx = float(tok.next())
+                ry = float(tok.next())
+                xAxisRot = float(tok.next())
+                largeArcFlag = int(tok.next())
+                sweepFlag = int(tok.next())
+                x = float(tok.next())
+                y = float(tok.next())
+                (xmin, ymin, xmax, ymax) = boundingBoxForArc(currentx, currenty, rx, ry, xAxisRot, largeArcFlag, sweepFlag, x, y)
+                if relative:
+                    currentx = currentx + x
+                    currenty = currenty + y
+                else:
+                    currentx = x
+                    currenty = y
+                xlist.append(xmin)
+                xlist.append(xmax)
+                ylist.append(ymin)
+                ylist.append(ymax)
+                        
             elif cmd == 'Z':
                 # No argumants to Z, and no new points
                 # but we reset position to the beginning
